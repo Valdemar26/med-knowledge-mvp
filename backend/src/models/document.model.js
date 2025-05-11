@@ -1,39 +1,37 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const DocumentSchema = new mongoose.Schema({
+const Document = sequelize.define('Document', {
   title: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   fileName: {
-    type: String,
-    required: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   fileType: {
-    type: String,
-    required: true,
-    enum: ['pdf', 'docx', 'doc', 'txt']
+    type: DataTypes.STRING,
+    allowNull: false
   },
   content: {
-    type: String,
-    required: true
+    type: DataTypes.TEXT,
+    allowNull: false
   },
   summary: {
-    type: String,
-    default: ''
+    type: DataTypes.TEXT,
+    defaultValue: ''
   },
   uploadDate: {
-    type: Date,
-    default: Date.now
-  },
-  metadata: {
-    type: Object,
-    default: {}
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 });
 
-// Індекс для повнотекстового пошуку
-DocumentSchema.index({ title: 'text', content: 'text' });
+// Синхронізуємо модель з базою даних
+const initModel = async () => {
+  await Document.sync({ force: true });
+  console.log('Модель Document синхронізовано з перезаписом');
+};
 
-module.exports = mongoose.model('Document', DocumentSchema);
+module.exports = { Document, initModel };

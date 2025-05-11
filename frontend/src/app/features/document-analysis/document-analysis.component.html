@@ -1,1 +1,168 @@
-<p>document-analysis works!</p>
+<div class="document-analysis">
+  <div class="row mb-4">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/upload">Documents</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Document analysis</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Індикатор завантаження -->
+  <div *ngIf="isLoadingDocument" class="d-flex justify-content-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Повідомлення про помилку -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Інформація про документ -->
+  <div *ngIf="document && !isLoadingDocument" class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h2 class="card-title mb-0">{{ document.title }}</h2>
+            <span class="badge"
+                  [ngClass]="{'bg-danger': document.fileType === 'pdf', 'bg-primary': document.fileType === 'docx' || document.fileType === 'doc', 'bg-secondary': document.fileType === 'txt'}">
+              {{ document.fileType.toUpperCase() }}
+            </span>
+          </div>
+
+          <div class="mb-4 text-muted small">
+            <i [class]="'bi ' + getFileIcon(document.fileType)" class="me-2"></i>
+            {{ document.fileName }} • Uploaded: {{ formatDate(document.uploadDate) }}
+          </div>
+
+          <div class="d-flex gap-2 mb-4">
+            <button
+              class="btn btn-primary"
+              (click)="generateSummary()"
+              [disabled]="isLoadingSummary"
+            >
+              <span *ngIf="isLoadingSummary"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status" aria-hidden="true"></span>
+              Generate summary
+            </button>
+
+            <button
+              class="btn btn-outline-primary"
+              (click)="analyzeKeyPoints()"
+              [disabled]="isLoadingKeyPoints"
+            >
+              <span *ngIf="isLoadingKeyPoints"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status" aria-hidden="true"></span>
+              Key points analysis
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Вкладки з результатами -->
+  <div *ngIf="document && !isLoadingDocument" class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="activeTab === 'content'"
+             (click)="setActiveTab('content')" href="javascript:void(0)">
+            Document content
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="activeTab === 'summary'"
+             (click)="setActiveTab('summary')" href="javascript:void(0)"
+             [class.disabled]="!summary">
+            Summary
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="activeTab === 'keyPoints'"
+             (click)="setActiveTab('keyPoints')"
+             href="javascript:void(0)"
+             [class.disabled]="keyPoints.length === 0">
+            Key points
+          </a>
+        </li>
+      </ul>
+
+      <!-- Вміст документа -->
+      <div *ngIf="activeTab === 'content'" class="tab-content">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="mb-4">Document content</h3>
+            <div class="document-content bg-light p-4 rounded" style="white-space: pre-line;">
+              {{ document.content }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Резюме документа -->
+      <div *ngIf="activeTab === 'summary'" class="tab-content">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="mb-4">Document summary</h3>
+            <div *ngIf="!summary && !isLoadingSummary" class="alert alert-info">
+              The summary has not been generated yet. Click the "Generate Summary" button.
+            </div>
+            <div *ngIf="isLoadingSummary" class="d-flex justify-content-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Summary generation...</span>
+              </div>
+            </div>
+            <div *ngIf="summary" class="document-summary" [innerHTML]="summary | markdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ключові тези -->
+      <div *ngIf="activeTab === 'keyPoints'" class="tab-content">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="mb-4">Key points</h3>
+            <div *ngIf="keyPoints.length === 0 && !isLoadingKeyPoints" class="alert alert-info">
+              The key points analysis has not yet been performed. Click the "Keynote points" button.
+            </div>
+            <div *ngIf="isLoadingKeyPoints" class="d-flex justify-content-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Document analysis...</span>
+              </div>
+            </div>
+
+            <div *ngIf="categories.length > 0" class="mb-4">
+              <h4 class="mb-3">Document categories</h4>
+              <div class="d-flex flex-wrap gap-2">
+                <span *ngFor="let category of categories" class="badge bg-info text-dark">{{ category }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="keyPoints.length > 0">
+              <h4 class="mb-3">Key provisions</h4>
+              <div class="list-group">
+                <div *ngFor="let point of keyPoints" class="list-group-item list-group-item-action">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ point.title }}</h5>
+                  </div>
+                  <p class="mb-1">{{ point.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

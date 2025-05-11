@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Document = require('../../models/document.model');
+const { Document } = require('../../models/document.model');
 const pdfParse = require('pdf-parse');
 
 // Налаштування multer для завантаження файлів
@@ -38,9 +38,13 @@ const upload = multer({
 // Отримати всі документи
 router.get('/', async (req, res) => {
   try {
-    const documents = await Document.find().select('-content').sort({ uploadDate: -1 });
+    const documents = await Document.findAll({
+      attributes: { exclude: ['content'] },
+      order: [['uploadDate', 'DESC']]
+    });
     res.json(documents);
   } catch (error) {
+    console.error('Помилка при отриманні документів:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -48,12 +52,57 @@ router.get('/', async (req, res) => {
 // Отримати конкретний документ
 router.get('/:id', async (req, res) => {
   try {
-    const document = await Document.findById(req.params.id);
+    const document = await Document.findByPk(req.params.id);
     if (!document) {
       return res.status(404).json({ message: 'Документ не знайдено' });
     }
     res.json(document);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Отримати файл документа для перегляду
+router.get('/file/:id', async (req, res) => {
+  try {
+    const document = await Document.findByPk(req.params.id);
+    if (!document) {
+      return res.status(404).json({ message: 'Документ не знайдено' });
+    }
+
+    // Шлях до файлу
+    const filePath = path.join(__dirname, '../../../uploads', path.basename(document.fileName));
+
+    // Перевіряємо, чи існує файл
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'Файл не знайдено' });
+    }
+
+    // Визначаємо Content-Type на основі типу файлу
+    let contentType = 'application/octet-stream'; // за замовчуванням
+
+    switch (document.fileType.toLowerCase()) {
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      case 'doc':
+      case 'docx':
+        contentType = 'application/msword';
+        break;
+      case 'txt':
+        contentType = 'text/plain';
+        break;
+    }
+
+    // Установлюємо заголовки відповіді
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${document.fileName}"`);
+
+    // Відправляємо файл
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Помилка при отриманні файлу:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -71,9 +120,14 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     // Витягнення тексту з PDF
     if (fileType === 'pdf') {
-      const dataBuffer = fs.readFileSync(filePath);
-      const pdfData = await pdfParse(dataBuffer);
-      content = pdfData.text;
+      try {
+        const dataBuffer = fs.readFileSync(filePath);
+        const pdfData = await pdfParse(dataBuffer);
+        content = pdfData.text;
+      } catch (error) {
+        console.error('Помилка при обробці PDF:', error);
+        content = 'Не вдалося витягнути текст з PDF документа';
+      }
     }
     // Для інших форматів - тимчасово просто читаємо як текст
     else if (fileType === 'txt') {
@@ -83,16 +137,16 @@ router.post('/', upload.single('file'), async (req, res) => {
       content = `Текст з ${fileType.toUpperCase()} буде доступний у повній версії`;
     }
 
-    const newDocument = new Document({
+    const newDocument = await Document.create({
       title: req.body.title || req.file.originalname,
-      fileName: req.file.originalname,
+      fileName: req.file.filename, // Використовуємо filename, а не originalname
       fileType: fileType,
       content: content
     });
 
-    const savedDocument = await newDocument.save();
-    res.status(201).json(savedDocument);
+    res.status(201).json(newDocument);
   } catch (error) {
+    console.error('Помилка при завантаженні документа:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -100,12 +154,12 @@ router.post('/', upload.single('file'), async (req, res) => {
 // Видалити документ
 router.delete('/:id', async (req, res) => {
   try {
-    const document = await Document.findById(req.params.id);
+    const document = await Document.findByPk(req.params.id);
     if (!document) {
       return res.status(404).json({ message: 'Документ не знайдено' });
     }
 
-    await Document.findByIdAndDelete(req.params.id);
+    await document.destroy();
     res.json({ message: 'Документ видалено' });
   } catch (error) {
     res.status(500).json({ message: error.message });

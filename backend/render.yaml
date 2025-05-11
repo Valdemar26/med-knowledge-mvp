@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: medknowledge-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node start.js
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/backend/uploads
+      sizeGB: 1
+    runtime: node
+
+  - type: web
+    name: medknowledge-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist/frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: medknowledge-backend
+          type: web
+          property: host

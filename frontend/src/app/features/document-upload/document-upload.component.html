@@ -1,1 +1,118 @@
-<p>document-upload works!</p>
+<div class="document-upload-container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>Documents uploading</h2>
+      <p class="text-muted">Upload medical documents so they can be searched and analyzed</p>
+
+      <div *ngIf="message" class="alert"
+           [ngClass]="{'alert-success': message.type === 'success', 'alert-danger': message.type === 'error'}">
+        {{ message.text }}
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-4">New document</h5>
+
+          <div class="mb-3">
+            <label for="title" class="form-label">Document title</label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              [(ngModel)]="documentTitle"
+              placeholder="Enter document title"
+            >
+          </div>
+
+          <div class="mb-4">
+            <label for="file" class="form-label">Document file</label>
+            <input
+              type="file"
+              class="form-control"
+              id="file"
+              accept=".pdf,.doc,.docx,.txt"
+              (change)="onFileSelected($event)"
+            >
+            <div class="form-text">Supported formats: PDF, DOC, DOCX, TXT. Maximum size: 10MB</div>
+          </div>
+
+          <div *ngIf="isUploading" class="mb-3">
+            <div class="progress">
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                [style.width.%]="uploadProgress"
+                [attr.aria-valuenow]="uploadProgress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                {{ uploadProgress }}%
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button
+              class="btn btn-primary"
+              (click)="uploadDocument()"
+              [disabled]="isUploading || !selectedFile"
+            >
+              <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Document upload
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-3">Uploaded documents</h3>
+
+      <div *ngIf="documents.length === 0" class="alert alert-info">
+        There are no documents uploaded yet.
+      </div>
+
+      <div class="table-responsive" *ngIf="documents.length > 0">
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th>Title</th>
+            <th>File type</th>
+            <th>Upload date</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let doc of documents">
+            <td>
+              <i [class]="'bi ' + getFileIcon(doc.fileType)" class="me-2"></i>
+              {{ doc.title }}
+            </td>
+            <td>{{ doc.fileType.toUpperCase() }}</td>
+            <td>{{ formatDate(doc.uploadDate) }}</td>
+            <td>
+              <div class="btn-group">
+                <a [routerLink]="['/view', doc.id]" class="btn btn-sm btn-outline-info">
+                  <i class="bi bi-eye me-1"></i>Review
+                </a>
+                <a [routerLink]="['/analyze', doc.id]" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-graph-up me-1"></i>Analyze
+                </a>
+                <button (click)="deleteDocument(doc.id, $event)" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

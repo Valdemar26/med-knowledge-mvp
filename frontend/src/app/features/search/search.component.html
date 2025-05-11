@@ -1,1 +1,46 @@
-<p>search works!</p>
+<div class="search-container">
+  <div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+      <h1 class="display-5 mb-4">Medical Document Knowledge Base</h1>
+      <p class="lead mb-4">
+        Enter a question to find relevant information in uploaded medical documents
+      </p>
+      <div class="input-group mb-3">
+        <input
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="Введіть ваш запит..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="search()"
+        >
+        <button
+          class="btn btn-primary btn-lg"
+          type="button"
+          [disabled]="isLoading || !searchQuery.trim()"
+          (click)="search()"
+        >
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="hasSearched">
+    <div class="col-12">
+      <div *ngIf="searchResults.length === 0 && !isLoading" class="alert alert-info">
+        Nothing found. Try a different query or upload more documents.
+      </div>
+
+      <div *ngIf="searchResults.length > 0" class="search-results">
+        <h2 class="mb-4">Search Results</h2>
+
+        <app-search-result
+          *ngFor="let result of searchResults"
+          [result]="result"
+          class="mb-4"
+        ></app-search-result>
+      </div>
+    </div>
+  </div>
+</div>

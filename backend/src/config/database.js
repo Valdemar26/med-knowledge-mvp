@@ -1,17 +1,23 @@
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
+const path = require('path');
+
+const dbPath = path.resolve(__dirname, '../../database.sqlite');
+
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: dbPath,
+  logging: false
+});
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log(`MongoDB підключено: ${conn.connection.host}`);
+    await sequelize.authenticate();
+    console.log('SQLite підключено успішно');
+    return sequelize;
   } catch (error) {
-    console.error(`Помилка: ${error.message}`);
+    console.error('Помилка підключення до SQLite:', error);
     process.exit(1);
   }
 };
 
-module.exports = connectDB;
+module.exports = { connectDB, sequelize };

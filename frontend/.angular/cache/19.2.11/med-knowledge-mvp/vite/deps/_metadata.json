@@ -1,34 +1,61 @@
 {
-  "hash": "5470b6f4",
-  "configHash": "8297965d",
+  "hash": "b2874724",
+  "configHash": "08ee1a12",
   "lockfileHash": "b9e2721b",
-  "browserHash": "c832dc63",
+  "browserHash": "a56d460c",
   "optimized": {
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "4dfea0eb",
+      "fileHash": "be99e092",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "038f736b",
+      "fileHash": "fe8cfd86",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "8bfc4e9c",
+      "fileHash": "5a6b6881",
+      "needsInterop": false
+    },
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "17f71972",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "401674fa",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "f7e95e36",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-SQLZZQMT": {
-      "file": "chunk-SQLZZQMT.js"
+    "chunk-557KKZCS": {
+      "file": "chunk-557KKZCS.js"
     },
-    "chunk-YIVJ2BNJ": {
-      "file": "chunk-YIVJ2BNJ.js"
+    "chunk-AZKBJVRL": {
+      "file": "chunk-AZKBJVRL.js"
+    },
+    "chunk-3B7AEY7J": {
+      "file": "chunk-3B7AEY7J.js"
+    },
+    "chunk-AFM5U4RT": {
+      "file": "chunk-AFM5U4RT.js"
+    },
+    "chunk-PR7ILNDV": {
+      "file": "chunk-PR7ILNDV.js"
     }
   }
 }

@@ -3,9 +3,9 @@ export interface Document {
   title: string;
   fileName: string;
   fileType: string;
+  uploadDate: string;
   content?: string;
   summary?: string;
-  uploadDate: string;
 }
 
 export interface SearchResult {

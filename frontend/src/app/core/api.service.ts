@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Document, SearchResult } from '../shared/models/document.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:5000/api';
+  public apiUrl: string = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -33,5 +34,13 @@ export class ApiService {
     return this.http.post<SearchResult[]>(`${this.apiUrl}/search`, { query });
   }
 
-  // У майбутньому можна додати методи для аналізу документів та інші
+  // Отримання резюме документа
+  getDocumentSummary(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/analysis/summary/${id}`);
+  }
+
+  // Отримання ключових тез документа
+  getDocumentKeyPoints(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/analysis/key-points/${id}`);
+  }
 }

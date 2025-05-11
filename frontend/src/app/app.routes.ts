@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/document-analysis/document-analysis.component').then(m => m.DocumentAnalysisComponent)
   },
   {
+    path: 'view/:id',
+    loadComponent: () => import('./features/document-viewer/document-viewer.component').then(m => m.DocumentViewerComponent)
+  },
+  {
     path: '**',
     redirectTo: '/search'
   }

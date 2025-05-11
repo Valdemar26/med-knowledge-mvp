@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Document = require('../../models/document.model');
+const { Document } = require('../../models/document.model');
+const { Op } = require('sequelize');
 const openai = require('../../config/openai');
 
 // Пошук документів
@@ -11,8 +12,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Потрібно ввести запит' });
     }
 
-    // Отримуємо всі документи (в реальному додатку потрібна пагінація)
-    const documents = await Document.find();
+    // Отримуємо всі документи
+    const documents = await Document.findAll();
 
     // Масив для зберігання результатів
     const results = [];
@@ -44,7 +45,7 @@ router.post('/', async (req, res) => {
         if (result.exists && result.relevance > 30) {
           results.push({
             document: {
-              id: doc._id,
+              id: doc.id,
               title: doc.title,
               fileName: doc.fileName,
               fileType: doc.fileType,
@@ -55,7 +56,7 @@ router.post('/', async (req, res) => {
           });
         }
       } catch (error) {
-        console.error(`Помилка при обробці документа ${doc._id}:`, error);
+        console.error(`Помилка при обробці документа ${doc.id}:`, error);
         // Продовжуємо з наступним документом
       }
     }
@@ -66,6 +67,7 @@ router.post('/', async (req, res) => {
     // Повертаємо лише top-5 результатів
     res.json(results.slice(0, 5));
   } catch (error) {
+    console.error('Помилка при пошуку:', error);
     res.status(500).json({ message: error.message });
   }
 });
